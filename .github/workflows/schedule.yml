@@ -1,0 +1,145 @@
+name: Docker build on schedule
+
+on:
+  push:
+    branches:
+      - main
+  # schedule:
+  #   - cron: '0 0 * * *'
+
+jobs:
+  matrix_prep:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          versions=("7.4" "8.0" "8.1" "8.2")
+          matrix=()
+
+          for version in ${versions[@]}; do
+              latest="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}.\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
+              current="$(curl --silent https://hub.docker.com/v2/repositories/xmpls/php/tags\?name\=${version}.\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
+              current="7.2.34"
+              if [ $latest != $current ]; then
+                  matrix+=("$latest")
+              fi
+          done
+          matrix=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")                
+          echo "matrix={\"php-version\":$(echo $matrix)}" >> $GITHUB_OUTPUT
+  build-fpm:
+    needs: matrix_prep
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          flavor: |
+            latest=false
+            suffix=-fpm-alpine
+          images: |
+            xmpls/php
+            ghcr.io/build-xmpls/php
+          tags: |
+            type=schedule
+            type=semver,pattern={{version}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}},value=${{ matrix.php-version }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, '8.2') }}
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v1
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v1
+      # - name: Login to DockerHub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # - name: Login to GHCR
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Build and push
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: .
+      #     platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
+      #     push: true
+      #     build-args: |
+      #       PHP_BASE_IMAGE=php:${{ matrix.php-version }}-fpm-alpine
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
+      # - name: Update repo description
+      #   uses: peter-evans/dockerhub-description@v3
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      #     repository: xmpls/php-fpm
+      #     short-description: ${{ github.event.repository.description }}
+  build-cli:
+    needs: matrix_prep
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          flavor: |
+            latest=false
+            suffix=-fpm-alpine
+          images: |
+            xmpls/php
+            ghcr.io/build-xmpls/php
+          tags: |
+            type=schedule
+            type=semver,pattern={{version}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}},value=${{ matrix.php-version }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, '8.2') }}
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v1
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v1
+      # - name: Login to DockerHub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # - name: Login to GHCR
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.repository_owner }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Build and push
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     context: .
+      #     platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
+      #     push: true
+      #     build-args: |
+      #       PHP_BASE_IMAGE=php:${{ matrix.php-version }}-cli-alpine
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
+      # - name: Update repo description
+      #   uses: peter-evans/dockerhub-description@v3
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      #     repository: xmpls/php-fpm
+      #     short-description: ${{ github.event.repository.description }}
+

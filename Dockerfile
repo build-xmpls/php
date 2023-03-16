@@ -7,5 +7,5 @@ ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/do
 RUN chmod +x /usr/local/bin/install-php-extensions && \
     install-php-extensions bcmath exif gd igbinary imagick \
     imap intl ldap memcached msgpack pcov pdo_mysql pdo_pgsql \
-    pgsql readline redis soap swoole zip   
+    pgsql readline redis soap zip   
 
