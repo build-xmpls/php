@@ -29,7 +29,7 @@ jobs:
         with:
           flavor: |
             latest=false
-            suffix=-fpm-alpine
+            suffix=-fpm-alpine,onlatest=false
           images: |
             xmpls/php
             ghcr.io/build-xmpls/php
@@ -94,7 +94,7 @@ jobs:
         with:
           flavor: |
             latest=false
-            suffix=-fpm-alpine
+            suffix=-fpm-alpine,onlatest=false
           images: |
             xmpls/php
             ghcr.io/build-xmpls/php
