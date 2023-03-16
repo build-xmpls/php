@@ -25,9 +25,18 @@ jobs:
         with:
           repository: library/php
           tag: ${{ matrix.php-version }}-fpm-alpine
+      - name: Check image
+        id: image_exists
+        uses: cloudposse/github-action-docker-image-exists@main
+        with:
+          registry: registry.hub.docker.com
+          repository: library/php
+          login: "${{ secrets.DOCKERHUB_USERNAME }}"
+          password: "${{ secrets.DOCKERHUB_PASSWORD }}"
+          tag: ${{ matrix.php-version }}-fpm-alpine
       - name: An example step (get the label matching id 'testlabel')
         run: |
-          echo '${{ steps.fetch-metadata.outputs.labels }}'
+          echo '${{ steps.image_exists.outputs.tag }}'
       # - name: Docker meta
       #   id: meta
       #   uses: docker/metadata-action@v4
