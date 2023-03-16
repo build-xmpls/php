@@ -19,15 +19,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Determine latest built PHP ${{ matrix.php-version }} version
-        id: latest_php_version
-        uses: flownative/action-docker-get-label@master
-        with:
-          image: php:${{ matrix.php-version }}-fpm-alpine
-          label: org.opencontainers.image.version
-          registry_endpoint: https://docker.io
-          registry_username: ${{ secrets.DOCKERHUB_USERNAME }}
-          registry_password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
