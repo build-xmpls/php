@@ -23,10 +23,12 @@ jobs:
         id: image_exists
         uses: cloudposse/github-action-docker-image-exists@main
         with:
+          registry: registry.hub.docker.com
+          organization: library
           repository: php
+          tag: ${{ matrix.php-version }}-fpm-alpine
           login: "${{ secrets.DOCKERHUB_USERNAME }}"
           password: "${{ secrets.DOCKERHUB_PASSWORD }}"
-          tag: ${{ matrix.php-version }}-fpm-alpine
       - name: An example step (get the label matching id 'testlabel')
         run: |
           echo '${{ steps.image_exists.outputs.tag }}'
