@@ -6,23 +6,30 @@ on:
       - main
 
 jobs:
+  matrix_prep:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          versions=("7.4" "8.0" "8.1" "8.2")
+          matrix=()
+          for version in ${versions[@]}; do
+              latest="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}.\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
+              matrix+=("$latest")
+          done
+          matrix=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")                
+          echo "matrix={\"php-version\":$(echo $matrix)}" >> $GITHUB_OUTPUT
   build-fpm:
+    needs: matrix_prep
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        php-version:
-          - "7.4"
-          - "8.0"
-          - "8.1"
-          - "8.2"
+      matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Get latest image for PHP ${{ matrix.php-version }}
-        id: latest-image
-        run: |
-          echo "version=$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${{ matrix.php-version }}.\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')" >> $GITHUB_OUTPUT
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -35,10 +42,10 @@ jobs:
             ghcr.io/build-xmpls/php
           tags: |
             type=schedule
-            type=semver,pattern={{version}},value=${{ steps.latest-image.outputs.version }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ steps.latest-image.outputs.version }}
-            type=semver,pattern={{major}},value=${{ steps.latest-image.outputs.version }}
-            type=raw,value=latest,enable=${{ startsWith(steps.latest-image.outputs.version, '8.2') }}
+            type=semver,pattern={{version}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}},value=${{ matrix.php-version }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, '8.2') }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -61,7 +68,7 @@ jobs:
           platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
           push: true
           build-args: |
-            PHP_BASE_IMAGE=php:${{ steps.latest-image.outputs.version }}-fpm-alpine
+            PHP_BASE_IMAGE=php:${{ matrix.php-version }}-fpm-alpine
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Update repo description
@@ -72,22 +79,14 @@ jobs:
           repository: xmpls/php-fpm
           short-description: ${{ github.event.repository.description }}
   build-cli:
+    needs: matrix_prep
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        php-version:
-          - "7.4"
-          - "8.0"
-          - "8.1"
-          - "8.2"
+      matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Get latest image for PHP ${{ matrix.php-version }}
-        id: latest-image
-        run: |
-          echo "version=$(curl https://hub.docker.com/v2/repositories/library/php/tags\?name\=${{ matrix.php-version }}.\&page_size\=999 | jq -r '.results[].name' | grep 'cli-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')" >> $GITHUB_OUTPUT
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -100,10 +99,10 @@ jobs:
             ghcr.io/build-xmpls/php
           tags: |
             type=schedule
-            type=semver,pattern={{version}},value=${{ steps.latest-image.outputs.version }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ steps.latest-image.outputs.version }}
-            type=semver,pattern={{major}},value=${{ steps.latest-image.outputs.version }}
-            type=raw,value=latest,enable=${{ startsWith(steps.latest-image.outputs.version, '8.2') }}
+            type=semver,pattern={{version}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}},value=${{ matrix.php-version }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, '8.2') }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -126,7 +125,7 @@ jobs:
           platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
           push: true
           build-args: |
-            PHP_BASE_IMAGE=php:${{ steps.latest-image.outputs.version }}-cli-alpine
+            PHP_BASE_IMAGE=php:${{ matrix.php-version }}-cli-alpine
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Update repo description
@@ -136,4 +135,3 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           repository: xmpls/php-fpm
           short-description: ${{ github.event.repository.description }}
-
