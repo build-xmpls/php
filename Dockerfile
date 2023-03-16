@@ -1,4 +1,6 @@
-FROM --platform=$BUILDPLATFORM php:${php_version}-fpm-alpine
+ARG PHP_BASE_IMAGE
+
+FROM ${PHP_BASE_IMAGE}
 
 ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions /usr/local/bin/
 
