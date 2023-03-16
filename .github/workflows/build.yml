@@ -19,14 +19,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Search latest semver Image
-        id: latest-image
-        uses: tinact/docker.image-latest@master
-        with:
-          image_name: 'library/php:${{ matrix.php-version }}-fpm-alpine'
       - name: An example step (get the label matching id 'testlabel')
+        id: latest-image
         run: |
-          echo '${{ steps.latest-image.outputs }}'
+          curl https://hub.docker.com/v2/repositories/library/php/tags\?name\=${{ matrix.php-version }}\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | sort --version-sort | tail -n 1
       # - name: Docker meta
       #   id: meta
       #   uses: docker/metadata-action@v4
