@@ -25,6 +25,9 @@ jobs:
         with:
           repository: library/php
           tag: ${{ matrix.php-version }}-fpm-alpine
+      - name: An example step (get the label matching id 'testlabel')
+        run: |
+          echo '${{ steps.fetch-metadata.outputs.labels }}'
       # - name: Docker meta
       #   id: meta
       #   uses: docker/metadata-action@v4
