@@ -32,16 +32,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          # list of Docker images to use as base name for tags
           images: |
-            xmpls/php-fpm
-            ghcr.io/build-xmpls/php-fpm
-          # generate Docker tags based on the following events/attributes
+            php:${{ matrix.php-version }}-fpm-alpine
           tags: |
             type=schedule
-            type=semver,pattern={{version}},value=${{ steps.latest_php_version.outputs.value }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ steps.latest_php_version.outputs.value }}
-            type=semver,pattern={{major}},value=${{ steps.latest_php_version.outputs.value }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
@@ -64,7 +61,7 @@ jobs:
           platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
           push: true
           build-args: |
-            PHP_BASE_IMAGE=php:${{ steps.latest_php_version.outputs.value }}-fpm-alpine
+            PHP_BASE_IMAGE=php:${{ steps.meta.outputs.version }}-fpm-alpine
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Update repo description
