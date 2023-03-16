@@ -19,22 +19,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: An example step (get the label matching id 'testlabel')
+      - name: Get latest image for PHP ${{ matrix.php-version }}
         id: latest-image
         run: |
           curl https://hub.docker.com/v2/repositories/library/php/tags\?name\=${{ matrix.php-version }}\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | sort --version-sort | tail -n 1
-      # - name: Docker meta
-      #   id: meta
-      #   uses: docker/metadata-action@v4
-      #   with:
-      #     images: |
-      #       xmpls/php
-      #       ghcr.io/build-xmpls/php
-      #     tags: |
-      #       type=schedule
-      #       type=semver,pattern={{version}},value=${{ steps.latest_php_version.outputs.value }}
-      #       type=semver,pattern={{major}}.{{minor}},value=${{ steps.latest_php_version.outputs.value }}
-      #       type=semver,pattern={{major}},value=${{ steps.latest_php_version.outputs.value }}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            xmpls/php
+            ghcr.io/build-xmpls/php
+          tags: |
+            type=schedule
+            type=semver,pattern={{version}},value=${{ steps.latest-image.outputs }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.latest-image.outputs }}
+            type=semver,pattern={{major}},value=${{ steps.latest-image.outputs }}
       # - name: Set up QEMU
       #   uses: docker/setup-qemu-action@v1
       # - name: Set up Docker Buildx
