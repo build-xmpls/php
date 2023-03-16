@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  matrix_prep:
+  versions:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -23,11 +23,11 @@ jobs:
           matrix=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")                
           echo "matrix={\"php-version\":$(echo $matrix)}" >> $GITHUB_OUTPUT
   build-fpm:
-    needs: matrix_prep
+    needs: versions
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
+      matrix: ${{fromJson(needs.versions.outputs.matrix)}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -80,11 +80,11 @@ jobs:
           repository: xmpls/php-fpm
           short-description: ${{ github.event.repository.description }}
   build-cli:
-    needs: matrix_prep
+    needs: versions
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.matrix_prep.outputs.matrix)}}
+      matrix: ${{fromJson(needs.versions.outputs.matrix)}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
