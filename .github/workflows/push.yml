@@ -27,14 +27,17 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
+          flavor: |
+            latest=false
+            suffix=-fpm-alpine
           images: |
             xmpls/php
             ghcr.io/build-xmpls/php
           tags: |
             type=schedule
-            type=semver,pattern={{version}}-fpm-alpine,value=${{ steps.latest-image.outputs.version }}
-            type=semver,pattern={{major}}.{{minor}}-fpm-alpine,value=${{ steps.latest-image.outputs.version }}
-            type=semver,pattern={{major}}-fpm-alpine,value=${{ steps.latest-image.outputs.version }}
+            type=semver,pattern={{version}},value=${{ steps.latest-image.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.latest-image.outputs.version }}
+            type=semver,pattern={{major}},value=${{ steps.latest-image.outputs.version }}
             type=raw,value=latest,enable=${{ startsWith(steps.latest-image.outputs.version, '8.2') }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -89,14 +92,17 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
+          flavor: |
+            latest=false
+            suffix=-fpm-alpine
           images: |
             xmpls/php
             ghcr.io/build-xmpls/php
           tags: |
             type=schedule
-            type=semver,pattern={{version}}-cli-alpine,value=${{ steps.latest-image.outputs.version }}
-            type=semver,pattern={{major}}.{{minor}}-cli-alpine,value=${{ steps.latest-image.outputs.version }}
-            type=semver,pattern={{major}}-cli-alpine,value=${{ steps.latest-image.outputs.version }}
+            type=semver,pattern={{version}},value=${{ steps.latest-image.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ steps.latest-image.outputs.version }}
+            type=semver,pattern={{major}},value=${{ steps.latest-image.outputs.version }}
             type=raw,value=latest,enable=${{ startsWith(steps.latest-image.outputs.version, '8.2') }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
