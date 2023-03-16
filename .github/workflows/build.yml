@@ -32,9 +32,9 @@ jobs:
             ghcr.io/build-xmpls/php
           tags: |
             type=schedule
-            type=semver,pattern={{version}},value=${{ steps.latest-image.outputs }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ steps.latest-image.outputs }}
-            type=semver,pattern={{major}},value=${{ steps.latest-image.outputs }}
+            type=pattern={{version}}-fpm-alpine,value=${{ steps.latest-image.outputs }}
+            type=pattern={{major}}.{{minor}}-fpm-alpine,value=${{ steps.latest-image.outputs }}
+            type=pattern={{major}}-fpm-alpine,value=${{ steps.latest-image.outputs }}
       # - name: Set up QEMU
       #   uses: docker/setup-qemu-action@v1
       # - name: Set up Docker Buildx
