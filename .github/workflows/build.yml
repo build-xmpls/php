@@ -74,7 +74,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-          repository: xmpls/php-fpm
+          repository: xmpls/php
           short-description: ${{ github.event.repository.description }}
   build-cli:
     needs: versions
