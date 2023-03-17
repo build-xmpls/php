@@ -28,7 +28,7 @@ jobs:
     needs: versions
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix: ${{fromJson(needs.versions.outputs.matrix)}}
     steps:
       - name: Checkout
@@ -68,7 +68,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
           push: true
           build-args: |
             PHP_BASE_IMAGE=php:${{ matrix.php-version }}-fpm-alpine
@@ -85,7 +85,7 @@ jobs:
     needs: versions
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix: ${{fromJson(needs.versions.outputs.matrix)}}
     steps:
       - name: Checkout
@@ -125,7 +125,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
           push: true
           build-args: |
             PHP_BASE_IMAGE=php:${{ matrix.php-version }}-cli-alpine

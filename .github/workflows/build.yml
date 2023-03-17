@@ -1,9 +1,7 @@
-name: Docker build on push
+name: Docker build
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   versions:
@@ -66,7 +64,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
           push: true
           build-args: |
             PHP_BASE_IMAGE=php:${{ matrix.php-version }}-fpm-alpine
@@ -123,7 +121,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/386,linux/arm64,linux/arm/v7,linux/arm/v6
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
           push: true
           build-args: |
             PHP_BASE_IMAGE=php:${{ matrix.php-version }}-cli-alpine
