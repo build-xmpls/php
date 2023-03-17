@@ -6,6 +6,33 @@
 
 Docker example for [php](https://hub.docker.com/_/php)
 
+Extension installation done with: [docker-php-extension-installer](https://github.com/mlocati/docker-php-extension-installer) 
+
+#### Installed extensions:
+- bcmath 
+- exif 
+- gd 
+- igbinary 
+- imagick
+- imap 
+- intl 
+- ldap 
+- memcached 
+- msgpack 
+- pcov 
+- pdo_mysql 
+- pdo_pgsql 
+- pgsql 
+- readline 
+- redis 
+- soap 
+- zip
+
+## License
+
+build-xmpls/php is open-sourced software licensed under the [MIT license](LICENSE).
+
+
 [gh-action-build-image]: https://github.com/build-xmpls/php/actions/workflows/build.yml/badge.svg
 [gh-action-build-url]: https://github.com/build-xmpls/php/actions/workflows/build.yml
 [gh-action-nightly-image]: https://github.com/build-xmpls/php/actions/workflows/nightly.yml/badge.svg
