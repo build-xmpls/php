@@ -25,7 +25,7 @@ jobs:
           echo "matrix={\"php-version\":$(echo $matrix)}" >> $GITHUB_OUTPUT
   build-fpm:
     needs: versions
-    if: needs.versions.outputs.matrix != ''
+    if: needs.versions.outputs.matrix.php-version != ''
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -83,7 +83,7 @@ jobs:
           short-description: ${{ github.event.repository.description }}
   build-cli:
     needs: versions
-    if: needs.versions.outputs.matrix != ''
+    if: needs.versions.outputs.matrix.php-version != ''
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
