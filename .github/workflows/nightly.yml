@@ -22,11 +22,15 @@ jobs:
                   matrix+=("$latest")
               fi
           done
-          matrix=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")                
-          echo "matrix={\"php-version\":$(echo $matrix)}" >> $GITHUB_OUTPUT
+          if [ ${#matrix[@]} > 0 ]; then
+            matrix=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")                
+            echo "matrix={\"php-version\":$(echo $matrix)}" >> $GITHUB_OUTPUT
+          else
+            echo "matrix=false" >> $GITHUB_OUTPUT
+          fi
   build-fpm:
     needs: versions
-    if: needs.versions.outputs.matrix != ''
+    if: needs.versions.outputs.matrix != 'false'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -84,7 +88,7 @@ jobs:
           short-description: ${{ github.event.repository.description }}
   build-cli:
     needs: versions
-    if: needs.versions.outputs.matrix != ''
+    if: needs.versions.outputs.matrix != 'false'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
