@@ -23,12 +23,13 @@ jobs:
               fi
           done
           if [ ${#matrix[@]} -gt 0 ]; then
-            matrix=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")                
-            echo "matrix={\"php-version\":$(echo $matrix)}" >> $GITHUB_OUTPUT
+            echo "Versions: ${matrix[@]}"
+            matrixjson=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")                
+            echo "matrix={\"php-version\":$(echo $matrixjson)}" >> $GITHUB_OUTPUT
           else
+            echo "No new version found..."
             echo "matrix=false" >> $GITHUB_OUTPUT
           fi
-          echo "Versions: ${matrix[@]}"
   build-fpm:
     needs: versions
     if: needs.versions.outputs.matrix != 'false'
