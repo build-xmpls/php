@@ -22,7 +22,7 @@ jobs:
                   matrix+=("$latest")
               fi
           done
-          if [ ${#matrix[@]} > 0 ]; then
+          if [ ${#matrix[@]} -gt 0 ]; then
             matrix=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")                
             echo "matrix={\"php-version\":$(echo $matrix)}" >> $GITHUB_OUTPUT
           else
