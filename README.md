@@ -9,23 +9,25 @@ Docker example for [php](https://hub.docker.com/_/php)
 Extension installation done with: [docker-php-extension-installer](https://github.com/mlocati/docker-php-extension-installer) 
 
 #### Installed extensions:
-- bcmath 
-- exif 
-- gd 
-- igbinary 
+- bcmath
+- calendar
+- csv
+- exif
+- gd
+- igbinary
 - imagick
-- imap 
-- intl 
-- ldap 
-- memcached 
-- msgpack 
-- pcov 
-- pdo_mysql 
-- pdo_pgsql 
-- pgsql 
-- readline 
-- redis 
-- soap 
+- imap
+- intl
+- ldap
+- memcached
+- msgpack
+- opcache
+- pcov
+- pdo_mysql
+- pdo_pgsql
+- pgsql
+- readlineredis
+- soap
 - zip
 
 ## License
