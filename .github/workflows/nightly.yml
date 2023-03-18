@@ -26,7 +26,7 @@ jobs:
           echo "matrix={\"php-version\":$(echo $matrix)}" >> $GITHUB_OUTPUT
   build-fpm:
     needs: versions
-    if: needs.versions.outputs.matrix.php-version != ''
+    if: needs.versions.outputs.matrix != ''
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -84,7 +84,7 @@ jobs:
           short-description: ${{ github.event.repository.description }}
   build-cli:
     needs: versions
-    if: needs.versions.outputs.matrix.php-version != ''
+    if: needs.versions.outputs.matrix != ''
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -140,4 +140,3 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
           repository: xmpls/php
           short-description: ${{ github.event.repository.description }}
-
