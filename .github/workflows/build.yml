@@ -19,6 +19,7 @@ jobs:
           for version in ${versions[@]}; do
               echo $version
               latest="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
+              echo $latest
               matrix+=("$latest")
           done
           echo "Versions: ${matrix[@]}" 
