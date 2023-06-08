@@ -21,12 +21,14 @@ Extension installation done with: [docker-php-extension-installer](https://githu
 - ldap
 - memcached
 - msgpack
+- mysqli
 - opcache
 - pcov
 - pdo_mysql
 - pdo_pgsql
 - pgsql
-- readlineredis
+- readline
+- redis
 - soap
 - zip
 

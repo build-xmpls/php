@@ -7,6 +7,10 @@ ADD https://github.com/mlocati/docker-php-extension-installer/releases/latest/do
 RUN chmod +x /usr/local/bin/install-php-extensions && \
     install-php-extensions bcmath calendar csv exif gd \
     igbinary imagick imap intl ldap memcached msgpack \
-    opcache pcov pdo_mysql pdo_pgsql pgsql readline \
+    mysqli opcache pcov pdo_mysql pdo_pgsql pgsql readline \
     redis soap zip   
 
+STOPSIGNAL SIGQUIT
+
+EXPOSE 9000
+CMD ["php-fpm"]
