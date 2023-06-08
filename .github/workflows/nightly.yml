@@ -16,10 +16,11 @@ jobs:
           matrix=()
           versions=($(curl --silent https://www.php.net/releases/\?json | jq -r --raw-output 'map(.) | .[0].supported_versions | @tsv'))
           for version in ${versions[@]}; do
-              latest="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
+              latest="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
+              latestfpmalpine="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${latest}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               current="$(curl --silent https://hub.docker.com/v2/repositories/xmpls/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
-              if [ $latest != $current ]; then
-                  matrix+=("$latest")
+              if [ $latestfpmalpine != $current ]; then
+                  matrix+=("$latestfpmalpine)
               fi
           done
           if [ ${#matrix[@]} -gt 0 ]; then
