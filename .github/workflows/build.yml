@@ -10,7 +10,7 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - id: set-matrix
-        shell: bash
+        uses: sergeysova/jq-action@v2
         run: |
           matrix=()
           versions=(7.4 $(curl --silent https://www.php.net/releases/\?json | jq -r --raw-output 'map(.) | .[0].supported_versions | @tsv'))
