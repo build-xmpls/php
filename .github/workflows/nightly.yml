@@ -21,7 +21,7 @@ jobs:
               current="$(curl --silent https://hub.docker.com/v2/repositories/xmpls/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               if [ ! -z "$current" ]; then
                 if [ $latestfpmalpine != $current ]; then
-                    matrix+=("$latestfpmalpine")
+                  matrix+=("$latestfpmalpine")
                 fi
               else
                 matrix+=("$latestfpmalpine")
@@ -30,11 +30,12 @@ jobs:
           if [ ${#matrix[@]} -gt 0 ]; then
             echo "Versions: ${matrix[@]}"
             matrixjson=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")                
-            echo "matrix={\"php-version\":$(echo $matrixjson)}" >> $GITHUB_OUTPUT
+            output="matrix={\"php-version\":$(echo $matrixjson)}"
           else
             echo "No new version found..."
-            echo "matrix=false" >> $GITHUB_OUTPUT
+            output="matrix=false"
           fi
+          echo $output >> $GITHUB_OUTPUT
   build-fpm:
     needs: versions
     if: needs.versions.outputs.matrix != 'false'
