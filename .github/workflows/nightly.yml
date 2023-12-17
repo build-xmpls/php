@@ -12,8 +12,9 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - id: set-matrix
+        shell: bash
         run: |
-          summery=""
+          # Get latest version
           output="matrix=false"
           matrix=()
           versions=($(curl --silent https://www.php.net/releases/\?json | jq -r --raw-output 'map(.) | .[0].supported_versions | @tsv'))
@@ -26,11 +27,9 @@ jobs:
               fi
           done
           if [ ${#matrix[@]} -gt 0 ]; then
-            summery="Versions: ${matrix[@]}"
             matrixjson=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")
             output="matrix={\"php-version\":$(echo $matrixjson)}"
           fi
-          echo $summery >> $GITHUB_STEP_SUMMARY
           echo $output >> $GITHUB_OUTPUT
   build-fpm:
     needs: versions
