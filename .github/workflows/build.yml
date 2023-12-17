@@ -56,7 +56,7 @@ jobs:
           tags: |
             type=schedule
             type=semver,pattern={{version}},value=${{ matrix.php-version }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version. }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
             type=semver,pattern={{major}},value=${{ matrix.php-version }}
             type=raw,value=latest,enable=${{ startsWith(matrix.php-version, needs.versions.outputs.latest) }}
             type=sha 
