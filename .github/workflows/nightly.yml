@@ -13,7 +13,7 @@ jobs:
     steps:
       - id: set-matrix
         name: Get latest version
-        shell: bash
+        shell: "bash --noprofile --norc {0}"
         run: |
           output="matrix=false"
           matrix=()
