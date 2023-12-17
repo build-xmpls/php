@@ -30,7 +30,7 @@ jobs:
           done
           if [ ${#matrix[@]} -gt 0 ]; then
             matrixjson=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")
-            output="matrix={\"php-version\":$(echo $matrixjson),\"latest\":$(echo $latest)}"
+            output="matrix={\"php-version\":$(echo $matrixjson),\"latest\":\"$(echo $latest)\"}"
           fi
           echo $output >> $GITHUB_OUTPUT
   build-fpm:
