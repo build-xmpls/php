@@ -12,8 +12,9 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - id: set-matrix
+        name: Get latest version
+        shell: bash
         run: |
-          # Get latest version
           output="matrix=false"
           matrix=()
           versions=($(curl --silent https://www.php.net/releases/\?json | jq -r --raw-output 'map(.) | .[0].supported_versions | @tsv'))
