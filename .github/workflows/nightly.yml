@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      latest: ${{ steps.set-matrix.outputs.latest }}
     steps:
       - id: set-matrix
         name: Get latest version
@@ -56,10 +57,10 @@ jobs:
             ghcr.io/build-xmpls/php
           tags: |
             type=schedule
-            type=semver,pattern={{version}},value=${{ matrix.php-version.semver }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version.semver }}
-            type=semver,pattern={{major}},value=${{ matrix.php-version.semver }}
-            type=raw,value=latest,enable=${{ startsWith(matrix.php-version.semver, matrix.php-version.latest) }}
+            type=semver,pattern={{version}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version. }}
+            type=semver,pattern={{major}},value=${{ matrix.php-version }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, needs.versions.outputs.latest) }}
             type=sha 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -83,7 +84,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
-            PHP_BASE_IMAGE=php:${{ matrix.php-version.semver }}-fpm-alpine
+            PHP_BASE_IMAGE=php:${{ matrix.php-version }}-fpm-alpine
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Update repo description
@@ -115,10 +116,10 @@ jobs:
             ghcr.io/build-xmpls/php
           tags: |
             type=schedule
-            type=semver,pattern={{version}},value=${{ matrix.php-version.semver }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version.semver }}
-            type=semver,pattern={{major}},value=${{ matrix.php-version.semver }}
-            type=raw,value=latest,enable=${{ startsWith(matrix.php-version.semver, matrix.php-version.latest) }}
+            type=semver,pattern={{version}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}},value=${{ matrix.php-version }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, needs.versions.outputs.latest) }}
             type=sha
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -142,7 +143,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
-            PHP_BASE_IMAGE=php:${{ matrix.php-version.semver }}-cli-alpine
+            PHP_BASE_IMAGE=php:${{ matrix.php-version }}-cli-alpine
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Update repo description

@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      latest: ${{ steps.set-matrix.outputs.latest }}
     steps:
       - id: set-matrix
         name: Get latest version
@@ -55,9 +56,9 @@ jobs:
           tags: |
             type=schedule
             type=semver,pattern={{version}},value=${{ matrix.php-version }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version. }}
             type=semver,pattern={{major}},value=${{ matrix.php-version }}
-            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, matrix.latest) }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, needs.versions.outputs.latest) }}
             type=sha 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -116,7 +117,7 @@ jobs:
             type=semver,pattern={{version}},value=${{ matrix.php-version }}
             type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
             type=semver,pattern={{major}},value=${{ matrix.php-version }}
-            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, matrix.latest) }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, needs.versions.outputs.latest) }}
             type=sha
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -150,4 +151,3 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: xmpls/php
           short-description: ${{ github.event.repository.description }}
-
