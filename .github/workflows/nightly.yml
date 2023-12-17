@@ -12,7 +12,6 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - id: set-matrix
-        shell: bash
         run: |
           # Get latest version
           output="matrix=false"
