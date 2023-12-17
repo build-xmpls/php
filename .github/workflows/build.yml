@@ -16,7 +16,7 @@ jobs:
           # Get latest version
           output="matrix=false"
           matrix=()
-          versions=($(curl --silent https://www.php.net/releases/\?json | jq -r --raw-output 'map(.) | .[].supported_versions.[]'))
+          versions=(7.4 8.0 $(curl --silent https://www.php.net/releases/\?json | jq -r --raw-output 'map(.) | .[].supported_versions.[]'))
           latest=$(curl --silent https://www.php.net/releases/\?json | jq -r --raw-output 'map(.) | .[].supported_versions.[]' | sort --version-sort | tail -n 1)
           for version in ${versions[@]}; do
               latestsemver="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
