@@ -10,19 +10,25 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - id: set-matrix
-        shell: bash
+        name: Get latest version
+        shell: "bash --noprofile --norc {0}"
         run: |
+          output="matrix=false"
           matrix=()
-          versions=(7.4 $(curl --silent https://www.php.net/releases/\?json | jq -r --raw-output 'map(.) | .[0].supported_versions | @tsv'))
-          echo "Versions: ${versions[@]}"
-          for version in ${versions[@]}; do 
+          versions=($(curl --silent https://www.php.net/releases/\?json | jq -r --raw-output 'map(.) | .[0].supported_versions | @tsv'))
+          for version in ${versions[@]}; do
               latest="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               latestfpmalpine="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${latest}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
-              matrix+=("$latestfpmalpine")
+              current="$(curl --silent https://hub.docker.com/v2/repositories/xmpls/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
+              if [ -z "$current" ] || [ $current != $latestfpmalpine ]; then
+                matrix+=("$latestfpmalpine")
+              fi
           done
-          echo "Versions: ${matrix[@]}" 
-          matrix=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")
-          echo "matrix={\"php-version\":$(echo $matrix)}" >> $GITHUB_OUTPUT
+          if [ ${#matrix[@]} -gt 0 ]; then
+            matrixjson=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")
+            output="matrix={\"php-version\":$(echo $matrixjson)}"
+          fi
+          echo $output >> $GITHUB_OUTPUT
   build-fpm-amd64:
     needs: versions
     runs-on: ubuntu-latest
