@@ -16,22 +16,24 @@ jobs:
         shell: "bash --noprofile --norc {0}"
         run: |
           # Get latest version
-          output="matrix=false"
           matrix=()
           versions=($(curl --silent https://www.php.net/releases/\?json | jq -r '.[].supported_versions | @tsv'))
+          latest=${versions[-1]}
           for version in ${versions[@]}; do
               latestsemver="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               latestfpmalpine="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${latestsemver}-fpm-alpine\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | grep 'fpm-alpine$' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               current="$(curl --silent https://hub.docker.com/v2/repositories/xmpls/php/tags\?name\=${version}-fpm-alpine\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | grep 'fpm-alpine$' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               if [ -z "$current" ] || [ $current != $latestfpmalpine ]; then
-                matrix+=("{\"semver\":\"$latestfpmalpine\"}")
+                matrix+=("$latestfpmalpine")
               fi
           done
           if [ ${#matrix[@]} -gt 0 ]; then
             matrixjson=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")
-            output="matrix={\"php-version\":$(echo $matrixjson),\"latest\":\"$(echo ${versions[-1]})\"}"
+            echo "matrix={\"php-version\":$(echo $matrixjson)}" >> $GITHUB_OUTPUT
+            echo "latest=\"$latest\"" >> $GITHUB_OUTPUT
+          else
+            echo "matrix=false" >> $GITHUB_OUTPUT
           fi
-          echo $output >> $GITHUB_OUTPUT
   build-fpm:
     needs: versions
     if: needs.versions.outputs.matrix != 'false'
