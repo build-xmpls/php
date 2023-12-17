@@ -24,7 +24,7 @@ jobs:
               latestfpmalpine="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${latestsemver}-fpm-alpine\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | grep 'fpm-alpine$' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               current="$(curl --silent https://hub.docker.com/v2/repositories/xmpls/php/tags\?name\=${version}-fpm-alpine\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | grep 'fpm-alpine$' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               if [ -z "$current" ] || [ $current != $latestfpmalpine ]; then
-                matrix+=("$latestfpmalpine")
+                matrix+=("{\"semver\":\"$latestfpmalpine\"}")
               fi
           done
           if [ ${#matrix[@]} -gt 0 ]; then
@@ -54,10 +54,10 @@ jobs:
             ghcr.io/build-xmpls/php
           tags: |
             type=schedule
-            type=semver,pattern={{version}},value=${{ matrix.php-version }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
-            type=semver,pattern={{major}},value=${{ matrix.php-version }}
-            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, matrix.latest) }}
+            type=semver,pattern={{version}},value=${{ matrix.php-version.semver }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version.semver }}
+            type=semver,pattern={{major}},value=${{ matrix.php-version.semver }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version.semver, matrix.php-version.latest) }}
             type=sha 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -81,7 +81,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
-            PHP_BASE_IMAGE=php:${{ matrix.php-version }}-fpm-alpine
+            PHP_BASE_IMAGE=php:${{ matrix.php-version.semver }}-fpm-alpine
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Update repo description
@@ -113,10 +113,10 @@ jobs:
             ghcr.io/build-xmpls/php
           tags: |
             type=schedule
-            type=semver,pattern={{version}},value=${{ matrix.php-version }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
-            type=semver,pattern={{major}},value=${{ matrix.php-version }}
-            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, matrix.latest) }}
+            type=semver,pattern={{version}},value=${{ matrix.php-version.semver }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version.semver }}
+            type=semver,pattern={{major}},value=${{ matrix.php-version.semver }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version.semver, matrix.php-version.latest) }}
             type=sha
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -140,7 +140,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
-            PHP_BASE_IMAGE=php:${{ matrix.php-version }}-cli-alpine
+            PHP_BASE_IMAGE=php:${{ matrix.php-version.semver }}-cli-alpine
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       - name: Update repo description
