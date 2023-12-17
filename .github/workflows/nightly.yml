@@ -15,20 +15,22 @@ jobs:
         name: Get latest version
         shell: "bash --noprofile --norc {0}"
         run: |
+          # Get latest version
           output="matrix=false"
           matrix=()
-          versions=($(curl --silent https://www.php.net/releases/\?json | jq -r --raw-output 'map(.) | .[0].supported_versions | @tsv'))
+          versions=($(curl --silent https://www.php.net/releases/\?json | jq -r '.[].supported_versions.[]'))
+          latest=$(curl --silent https://www.php.net/releases/\?json | jq -r '.[].supported_versions.[]' | sort --version-sort | tail -n 1)
           for version in ${versions[@]}; do
-              latest="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
-              latestfpmalpine="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${latest}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
-              current="$(curl --silent https://hub.docker.com/v2/repositories/xmpls/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep 'fpm-alpine$' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
+              latestsemver="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
+              latestfpmalpine="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${latestsemver}-fpm-alpine\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | grep 'fpm-alpine$' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
+              current="$(curl --silent https://hub.docker.com/v2/repositories/xmpls/php/tags\?name\=${version}-fpm-alpine\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | grep 'fpm-alpine$' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               if [ -z "$current" ] || [ $current != $latestfpmalpine ]; then
                 matrix+=("$latestfpmalpine")
               fi
           done
           if [ ${#matrix[@]} -gt 0 ]; then
             matrixjson=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")
-            output="matrix={\"php-version\":$(echo $matrixjson)}"
+            output="matrix={\"php-version\":$(echo $matrixjson),\"latest\":$(echo $latest)}"
           fi
           echo $output >> $GITHUB_OUTPUT
   build-fpm:
@@ -56,7 +58,8 @@ jobs:
             type=semver,pattern={{version}},value=${{ matrix.php-version }}
             type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
             type=semver,pattern={{major}},value=${{ matrix.php-version }}
-            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, '8.2') }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, matrix.latest) }}
+            type=sha 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -76,7 +79,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
+          platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
             PHP_BASE_IMAGE=php:${{ matrix.php-version }}-fpm-alpine
@@ -114,7 +117,8 @@ jobs:
             type=semver,pattern={{version}},value=${{ matrix.php-version }}
             type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
             type=semver,pattern={{major}},value=${{ matrix.php-version }}
-            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, '8.2') }}
+            type=raw,value=latest,enable=${{ startsWith(matrix.php-version, matrix.latest) }}
+            type=sha
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
@@ -134,7 +138,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
+          platforms: linux/amd64,linux/arm64
           push: true
           build-args: |
             PHP_BASE_IMAGE=php:${{ matrix.php-version }}-cli-alpine
