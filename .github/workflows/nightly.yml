@@ -34,7 +34,7 @@ jobs:
           if [ ${#matrix[@]} -gt 0 ]; then
             matrixjson=$(jq -c -n '$ARGS.positional' --args "${matrix[@]}")
             echo "matrix={\"php-version\":$(echo $matrixjson)}" >> $GITHUB_OUTPUT
-            echo "latest=\"$latest\"" >> $GITHUB_OUTPUT
+            echo "latest=$latest" >> $GITHUB_OUTPUT
           else
             echo "matrix=false" >> $GITHUB_OUTPUT
           fi
