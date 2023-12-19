@@ -14,11 +14,14 @@ jobs:
         name: Get latest version
         shell: "bash --noprofile --norc {0}"
         run: |
-          # Get latest version
+          #Get latest version
           matrix=()
-          versions=(7.4 8.0 $(curl --silent https://www.php.net/releases/\?json | jq -r '.[].supported_versions | @tsv'))
-          latest=${versions[-1]}
-          for version in ${versions[@]}; do
+          allversions=$(curl --silent https://www.php.net/releases/\?json | jq -r '.[].supported_versions | select(length > 0) += ["7.4", "8.0"] | select(length > 0) | sort')
+          #https://github.com/Imagick/imagick/issues/640
+          allversions=$(echo $allversions | jq -r 'del(.[] | select(. == "8.3"))')
+          latest=$(echo $allversions | jq -r .[-1])
+          versions=$(echo $allversions | jq -r '.[]')
+          for version in $versions; do
               latestsemver="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${version}\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               latestfpmalpine="$(curl --silent https://hub.docker.com/v2/repositories/library/php/tags\?name\=${latestsemver}-fpm-alpine\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | grep 'fpm-alpine$' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
               current="$(curl --silent https://hub.docker.com/v2/repositories/xmpls/php/tags\?name\=${version}-fpm-alpine\&ordering\=last_updated\&page_size\=999 | jq -r '.results[].name' | grep -iv 'rc' | grep 'fpm-alpine$' | sort --version-sort | tail -n 1 | grep -Eo '[0-9]\.[0-9]\.[0-9]+')"
@@ -59,7 +62,7 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},value=${{ matrix.php-version }}
             type=semver,pattern={{major}},value=${{ matrix.php-version }}
             type=raw,value=latest,enable=${{ startsWith(matrix.php-version, needs.versions.outputs.latest) }}
-            type=sha 
+            type=sha
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
