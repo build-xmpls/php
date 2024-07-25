@@ -113,7 +113,7 @@ jobs:
         with:
           flavor: |
             latest=false
-            suffix=-fpm-alpine
+            suffix=-cli-alpine
           images: |
             xmpls/php
             ghcr.io/build-xmpls/php
